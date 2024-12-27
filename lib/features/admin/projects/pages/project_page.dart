@@ -171,10 +171,41 @@ class _ProjectPageState extends State<ProjectPage> {
     var getTasks =
         SupaBase.from('tasks').select().eq('projectid', widget.projectId);
     return Scaffold(
+      backgroundColor: Color(0x343F5F68),
       appBar: AppBar(
-        title: Text(widget.projectName),
-        backgroundColor: Colors.purple,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0A3747), Color(0xFF0C4B5E)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: Text(
+            widget.projectName,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.arrow_forward, color: Colors.white),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+        elevation: 4,
+        shadowColor: Color(0xFF0A3747).withOpacity(0.5),
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -182,296 +213,313 @@ class _ProjectPageState extends State<ProjectPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                'توضیحات پروژه:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                widget.description,
-                style: TextStyle(fontSize: 14),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Color(0xFF0A3747), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      spreadRadius: 3,
+                      blurRadius: 6,
+                      offset: Offset(0, 3), // سایه
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'توضیحات پروژه:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0A3747),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      widget.description,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               const Text(
                 'وظایف:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 12),
               FutureBuilder(
-                  future: getTasks,
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    final tasks = snapshot.data!;
-                    return Column(
-                      children: [
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: tasks.length,
-                          itemBuilder: (context, index) {
-                            final task = tasks[index];
-                            return FutureBuilder(
-                                future: SupaBase.from('subtasks')
-                                    .select()
-                                    .eq('taskid', task['taskid']),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
-                                  }
-                                  final subtasks = snapshot.data!;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(16),
-                                                  color: Colors.white,
-                                                  // Background color
-                                                  border: Border.all(
-                                                    color: Colors.purple,
-                                                    // Border color
-                                                    width: 2, // Border width
+                future: getTasks,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final tasks = snapshot.data!;
+                  if (tasks.isEmpty) {
+                    // پیام در صورت نبودن تسک‌ها
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'هنوز وظیفه‌ای ایجاد نشده است',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0A3747), // آبی تیره
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  return Column(
+                    children: [
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: tasks.length,
+                        itemBuilder: (context, index) {
+                          final task = tasks[index];
+                          return FutureBuilder(
+                            future: SupaBase.from('subtasks')
+                                .select()
+                                .eq('taskid', task['taskid']),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                              final subtasks = snapshot.data!;
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        color: task['status'] == 'Done'
+                                            ? Color(0xFFE1F5FE) // آبی روشن برای انجام‌شده
+                                            : Color(0xFFFFFFFF), // سفید برای ناتمام
+                                        border: Border.all(
+                                          color: Color(0xFF0A3747), // آبی تیره
+                                          width: 2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.3),
+                                            blurRadius: 6,
+                                            spreadRadius: 2,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ListTile(
+                                        title: Text(
+                                          task["tasktitle"],
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                            color: Color(0xFF0A3747), // رنگ متن
+                                          ),
+                                        ),
+                                        trailing: (subtasks.isNotEmpty)
+                                            ? IconButton(
+                                          icon: Icon(
+                                            isExpanded.contains(task['taskid'])
+                                                ? Icons.keyboard_arrow_up
+                                                : Icons.keyboard_arrow_down,
+                                            color: Color(0xFF0A3747), // آبی تیره
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              if (isExpanded.contains(task['taskid'])) {
+                                                isExpanded.remove(task['taskid']);
+                                              } else {
+                                                isExpanded.add(task['taskid']);
+                                              }
+                                            });
+                                          },
+                                        )
+                                            : null,
+                                        leading: Checkbox(
+                                          value: task['status'] == 'Done',
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              updateTasks(task['taskid'], task['status']);
+                                            });
+                                          },
+                                          activeColor: Color(0xFF0A3747), // آبی تیره
+                                        ),
+                                      ),
+                                    ),
+                                    if (isExpanded.contains(task['taskid']))
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 16.0, top: 8.0),
+                                        child: Column(
+                                          children: subtasks.map<Widget>((subtask) {
+                                            return Container(
+                                              margin: const EdgeInsets.symmetric(vertical: 4),
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(12),
+                                                color: subtask['status'] == 'Done'
+                                                    ? Color(0xFFE1F5FE)
+                                                    : Color(0xFFFFFFFF),
+                                                border: Border.all(
+                                                  color: Color(0xFF0A3747),
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                              child: ListTile(
+                                                title: Text(
+                                                  subtask["subtasktitle"],
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Color(0xFF0A3747),
                                                   ),
                                                 ),
-                                                child: CheckboxListTile(
-                                                  title:
-                                                      Text(task["tasktitle"]),
-                                                  value:
-                                                      task['status'] == 'Done'
-                                                          ? true
-                                                          : false,
+                                                leading: Checkbox(
+                                                  value: subtask['status'] == 'Done',
                                                   onChanged: (bool? value) {
                                                     setState(() {
-                                                      updateTasks(
-                                                          task['taskid'],
-                                                          task['status']);
+                                                      updateSubTasks(subtask['subtaskid'],
+                                                          subtask['status']);
                                                     });
                                                   },
+                                                  activeColor: Color(0xFF0A3747),
                                                 ),
                                               ),
-                                            ),
-                                            (subtasks.length > 0)
-                                                ? (isExpanded.contains(
-                                                        task['taskid'])
-                                                    ? IconButton(
-                                                        icon: const Icon(
-                                                            Icons
-                                                                .keyboard_arrow_up_sharp,
-                                                            color:
-                                                                Colors.purple),
-                                                        onPressed: () => {
-                                                              setState(() {
-                                                                isExpanded
-                                                                    .remove(task[
-                                                                        'taskid']);
-                                                              })
-                                                            })
-                                                    : IconButton(
-                                                        icon: const Icon(
-                                                            Icons
-                                                                .keyboard_arrow_down_sharp,
-                                                            color:
-                                                                Colors.purple),
-                                                        onPressed: () => {
-                                                              setState(() {
-                                                                isExpanded.add(
-                                                                    task[
-                                                                        'taskid']);
-                                                              })
-                                                            }))
-                                                : const SizedBox(
-                                                    width: 38,
-                                                  )
-                                          ],
+                                            );
+                                          }).toList(),
                                         ),
-                                        if (isExpanded.contains(task['taskid']))
-                                          Column(
-                                            children: [
-                                              ListView.builder(
-                                                shrinkWrap: true,
-                                                physics:
-                                                    const NeverScrollableScrollPhysics(),
-                                                itemCount: subtasks.length,
-                                                itemBuilder: (context, index) {
-                                                  final subtask =
-                                                      subtasks[index];
-                                                  return Container(
-                                                    margin:
-                                                        const EdgeInsets.only(
-                                                            top: 8.0,
-                                                            left: 72.0),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              16),
-                                                      color: Colors.white,
-                                                      // Background color
-                                                      border: Border.all(
-                                                        color: Colors.purple,
-                                                        // Border color
-                                                        width:
-                                                            2, // Border width
-                                                      ),
-                                                    ),
-                                                    child: CheckboxListTile(
-                                                      title: Text(subtask[
-                                                          "subtasktitle"]),
-                                                      value:
-                                                          subtask['status'] ==
-                                                                  'Done'
-                                                              ? true
-                                                              : false,
-                                                      onChanged: (bool? value) {
-                                                        setState(() {
-                                                          updateSubTasks(
-                                                              subtask[
-                                                                  'subtaskid'],
-                                                              subtask[
-                                                                  'status']);
-                                                        });
-                                                      },
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                              const SizedBox(height: 20),
-                                            ],
-                                          ),
-                                      ],
-                                    ),
-                                  );
-                                });
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    );
-                  }),
+                                      ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  );
+                },
+              ),
               ..._tasks.asMap().entries.map((entry) {
                 int taskIndex = entry.key;
                 Map<String, dynamic> task = entry.value;
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _tasks[taskIndex]["taskController"],
-                              decoration: const InputDecoration(
-                                hintText: 'وظیفه جدید را وارد کنید',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _removeTask(taskIndex),
-                          ),
-                        ],
-                      ),
-                      ...task["subtasks"].asMap().entries.map((subEntry) {
-                        int subtaskIndex = subEntry.key;
-                        TextEditingController subtaskController =
-                            subEntry.value;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0, left: 16.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: subtaskController,
-                                  decoration: const InputDecoration(
-                                    hintText: 'زیر وظیفه را وارد کنید',
-                                    border: OutlineInputBorder(),
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Color(0xFF0A3747), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _tasks[taskIndex]["taskController"],
+                                decoration: InputDecoration(
+                                  hintText: 'وظیفه جدید را وارد کنید',
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(color: Color(0xFF0A3747)),
                                   ),
                                 ),
                               ),
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () =>
-                                    _removeSubtask(taskIndex, subtaskIndex),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.add_circle,
-                                color: Colors.purple),
-                            onPressed: () => _addSubtask(taskIndex),
-                          ),
-                          const Text(
-                            'افزودن زیر وظیفه',
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'فایل‌ها',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      ...task["files"].asMap().entries.map((fileEntry) {
-                        int fileIndex = fileEntry.key;
-                        String fileName = fileEntry.value;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0, left: 16.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(fileName),
-                              ),
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.delete, color: Colors.red),
-                                onPressed: () =>
-                                    _removeFile(taskIndex, fileIndex),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.upload_file,
-                                color: Colors.purple),
-                            onPressed: () => _addFile(taskIndex),
-                          ),
-                          const Text('افزودن فایل'),
-                        ],
-                      ),
-                    ],
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.redAccent),
+                              onPressed: () => _removeTask(taskIndex),
+                            ),
+                          ],
+                        ),
+                        ...task["subtasks"].asMap().entries.map((subEntry) {
+                          int subtaskIndex = subEntry.key;
+                          TextEditingController subtaskController = subEntry.value;
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: subtaskController,
+                                    decoration: InputDecoration(
+                                      hintText: 'زیر وظیفه را وارد کنید',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Color(0xFF0A3747)),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                  onPressed: () => _removeSubtask(taskIndex, subtaskIndex),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.add_circle, color: Color(0xFF0A3747)),
+                              onPressed: () => _addSubtask(taskIndex),
+                            ),
+                            const Text(
+                              'افزودن زیر وظیفه',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
                   ),
                 );
               }).toList(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: _addNewTask,
-                    icon: const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                    ),
-                    label: const Text(
-                      'اضافه کردن وظیفه',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
+                  HoverButton(
+                    onTap: _addNewTask,
+                    child: Row(
+                      children: [
+                        Icon(Icons.add, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text(
+                          'اضافه کردن وظیفه جدید',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                        SizedBox(width: 4),
+                      ],
                     ),
                   ),
                 ],
@@ -480,6 +528,7 @@ class _ProjectPageState extends State<ProjectPage> {
               if (_tasks.isNotEmpty)
                 SizedBox(
                   width: double.infinity,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: () => {
                       setState(() {
@@ -487,7 +536,7 @@ class _ProjectPageState extends State<ProjectPage> {
                       }),
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Color(0xFF0A3747),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: const Text(
@@ -496,7 +545,7 @@ class _ProjectPageState extends State<ProjectPage> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
               Column(
                 children: [
                   FutureBuilder(
@@ -510,32 +559,60 @@ class _ProjectPageState extends State<ProjectPage> {
                         return Column(
                           children: [
                             FutureBuilder(
-                                future: SupaBase.from('teams')
-                                    .select()
-                                    .eq('teamid', widget.teamId),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
-                                  }
-                                  final teams = snapshot.data!;
-                                  return ListView.builder(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: 1,
-                                      itemBuilder: (context, index) {
-                                        final team = teams[0];
-                                        return Center(
-                                          child: Text(
-                                            'اعضای تیم ${team['teamname']}:',
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
+                              future: SupaBase.from('teams')
+                                  .select()
+                                  .eq('teamid', widget.teamId),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
+                                final teams = snapshot.data!;
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: 1,
+                                  itemBuilder: (context, index) {
+                                    final team = teams[0];
+                                    return Row(
+                                      children: [
+                                        Spacer(),
+                                        Expanded(
+                                          child: Container(
+                                            margin: const EdgeInsets.symmetric(vertical: 8),
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(10),
+                                              border: Border.all(color: Color(0xFF0A3747), width: 2),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.3),
+                                                  spreadRadius: 2,
+                                                  blurRadius: 6,
+                                                  offset: Offset(0, 3),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                'اعضای تیم ${team['teamname']}:',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF0A3747),
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        );
-                                      });
-                                }),
+                                        ),
+                                        Spacer(),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
@@ -543,49 +620,53 @@ class _ProjectPageState extends State<ProjectPage> {
                               itemBuilder: (context, index) {
                                 final member = members[index];
                                 return Container(
-                                  margin: const EdgeInsets.only(
-                                      top: 8.0, left: 38.0),
-                                  padding: const EdgeInsets.all(12.0),
+                                  margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                  padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.purple,
-                                      width: 1, // Border width
-                                    ),
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Color(0xFF0A3747), width: 1.5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.3),
+                                        spreadRadius: 2,
+                                        blurRadius: 6,
+                                        offset: Offset(0, 3),
+                                      ),
+                                    ],
                                   ),
                                   child: FutureBuilder(
-                                      future: SupaBase.from('users')
-                                          .select()
-                                          .eq('userid', member['userid']),
-                                      builder: (context, snapshot) {
-                                        if (!snapshot.hasData) {
-                                          return const Center(
-                                              child:
-                                                  CircularProgressIndicator());
-                                        }
-                                        final users = snapshot.data!;
-                                        return ListView.builder(
-                                            shrinkWrap: true,
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            itemCount: users.length,
-                                            itemBuilder: (context, index) {
-                                              final userr = users[index];
-                                              return Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons
-                                                        .account_circle_outlined,
-                                                    size: 28,
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 8.0,
-                                                  ),
-                                                  Text(userr["fullname"]),
-                                                ],
-                                              );
-                                            });
-                                      }),
+                                    future: SupaBase.from('users')
+                                        .select()
+                                        .eq('userid', member['userid']),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) {
+                                        return const Center(
+                                            child: CircularProgressIndicator());
+                                      }
+                                      final users = snapshot.data!;
+                                      return ListView.builder(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemCount: users.length,
+                                        itemBuilder: (context, index) {
+                                          final user = users[index];
+                                          return ListTile(
+                                            leading: Icon(Icons.person, color: Color(0xFF0A3747)),
+                                            title: Text(
+                                              user['fullname'],
+                                              style:
+                                              TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                            ),
+                                            subtitle: Text(
+                                              user['email'] ?? 'No Email',
+                                              style: TextStyle(color: Colors.grey),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
                                 );
                               },
                             ),
@@ -601,55 +682,88 @@ class _ProjectPageState extends State<ProjectPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: 8,
                   ),
                   Expanded(
                     child: SizedBox(
-                      // width: 400,
                       height: 60,
                       child: ElevatedButton.icon(
                         onPressed: finishProject,
-                        icon: const Icon(Icons.task_alt),
-                        label: const Text('اتمام پروژه'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 24),
+                        icon: const Icon(Icons.task_alt, color: Colors.white),
+                        label: const Text(
+                          'اتمام پروژه',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                (Set<MaterialState> states) {
+                              if (states.contains(MaterialState.hovered)) {
+                                return const Color(0xFF3A685B);
+                              }
+                              return const Color(0xFF0A3747);
+                            },
+                          ),
+                          shadowColor: MaterialStateProperty.all(
+                            const Color(0xFF0A3747).withOpacity(0.5), // سایه سبز
+                          ),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12), // گوشه‌های گرد
+                            ),
+                          ),
+                          padding: MaterialStateProperty.all(
+                            const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 8,
                   ),
                   Expanded(
                     child: SizedBox(
-                      // width: 400,
                       height: 60,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          // عملکرد آپلود فایل
-                          FilePickerResult? result =
-                              await FilePicker.platform.pickFiles();
+                          FilePickerResult? result = await FilePicker.platform.pickFiles();
                           if (result != null) {
-                            // فایل انتخاب شده
                             print("فایل آپلود شده: ${result.files.single.name}");
                           } else {
                             print("آپلود فایل لغو شد.");
                           }
                         },
-                        icon: const Icon(Icons.upload_file),
-                        label: const Text('آپلود فایل پروژه'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 24),
+                        icon: const Icon(Icons.upload_file, color: Colors.white),
+                        label: const Text(
+                          'آپلود فایل پروژه',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                                (Set<MaterialState> states) {
+                              if (states.contains(MaterialState.hovered)) {
+                                return const Color(0xFF003F63);
+                              }
+                              return const Color(0xFF005B8F);
+                            },
+                          ),
+                          shadowColor: MaterialStateProperty.all(
+                            const Color(0xFF005B8F).withOpacity(0.5),
+                          ),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          padding: MaterialStateProperty.all(
+                            const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 8,
                   ),
                 ],
