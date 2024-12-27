@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../../../commons/widgets/loading_widget.dart';
 import '../../../../main.dart';
 import '../../login/pages/login_page.dart';
+import 'dart:ui';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -12,211 +12,327 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  PageController controller = PageController();
-  double scrollPosition = 0.0;
-
   final _formKey = GlobalKey<FormState>();
-  String _email = '';
-  String _username = '';
-  String _password = '';
+  bool isLoading = false;
   String _userType = 'مدیر';
+
   TextEditingController emailController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController passController = TextEditingController();
-  TextEditingController roleController = TextEditingController();
 
   Future<void> register() async {
-    if (_userType == 'مدیر') {
-      final addToAdmin = await SupaBase.from('admins').insert({
-      'userreference': (await SupaBase.from('users').insert({
+    try {
+      // Insert user data into 'users' table and get the user ID
+      final userId = (await SupaBase.from('users').insert({
         'fullname': nameController.text,
         'password': passController.text,
-        'role': _userType == 'مدیر'? 'Admin': 'User',
+        'role': _userType == 'مدیر' ? 'Admin' : 'User',
         'email': emailController.text,
-      }).select('userid')).first['userid'],
-    });
-    }else{
-      final addToNormalUsers = await SupaBase.from('normalusers').insert({
-        'userreference': (await SupaBase.from('users').insert({
-          'fullname': nameController.text,
-          'password': passController.text,
-          'role': _userType == 'مدیر'? 'Admin': 'User',
-          'email': emailController.text,
-        }).select('userid')).first['userid'],
-        'joineddate': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      });
-    }
-    Navigator.pushReplacement(
+      }).select('userid')).first['userid'];
+
+      // Insert user into respective table based on role
+      if (_userType == 'مدیر') {
+        await SupaBase.from('admins').insert({'userreference': userId});
+      } else {
+        await SupaBase.from('normalusers').insert({
+          'userreference': userId,
+          'joineddate': DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        });
+      }
+
+      // Navigate to login page
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (BuildContext ctx) => LoginPage()));
-    setState(() {
-      nameController.clear();
-      nameController.clear();
-      passController.clear();
-      emailController.clear();
-    });
+        MaterialPageRoute(builder: (BuildContext ctx) => LoginPage()),
+      );
+
+      // Clear form fields
+      setState(() {
+        emailController.clear();
+        nameController.clear();
+        passController.clear();
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      print("Error during registration: $e");
+    }
   }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      backgroundColor: Color(0xff650573),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(30, 40.0, 30, 80),
-      child: Center(
-          child: Expanded(
-            child: Container(
-              width: 380,
-              // height: 550,
+      backgroundColor: Color(0xFF174251), // Dark background color
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40.0),
+          child: Container(
+            width: 380,
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white,// Background color
-              border: Border.all(
-                color: Colors.purple, // Border color
-                width: 3, // Border width
-              ),
+              color: Color(0xFF0A3747),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SingleChildScrollView(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'ثبت نام',
-                        style:
-                            TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            'ایجاد حساب کاربری جدید یا ',
-                            style: TextStyle(fontSize: 10, color: Colors.black),
-                          ),
-                          GestureDetector(
-                            onTap: () => {
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (BuildContext ctx) => LoginPage()))
-            
-                            },
-                            child: Text('ورود به حساب کاربری',
-                                style: TextStyle(
-                                    fontSize: 10, color: Colors.blue)),
-                          )
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      TextFormField(
-                        controller: emailController,
-                        decoration: InputDecoration(
-                          labelText: 'آدرس ایمیل',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'لطفا ایمیل خود را وارد کنید';
-                          } else if (!RegExp( r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                              .hasMatch(value)) {
-                            return 'لطفا درستش کن';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) => _email = value!,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: nameController,
-                        decoration: InputDecoration(
-                          labelText: 'نام کاربری',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'لطفا نام کاربری درست را وارد کنید';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) => _username = value!,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        obscureText: true,
-                        controller: passController,
-                        decoration: InputDecoration(
-                          labelText: 'رمز عبور',
-                          border: OutlineInputBorder(),
-                          suffixIcon: Icon(Icons.visibility),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'لطفا رمز عبور را درست وارد کنید';
-                          } else if (value.length < 6) {
-                            return 'رمز عبور باید بیشتر از 6 کاراکتر باشد';
-                          }
-                          return null;
-                        },
-                        onSaved: (value) => _password = value!,
-                      ),
-                      SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        value: _userType,
-                        decoration: InputDecoration(
-                          labelText: 'نوع کاربر',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: ['کاربر عادی', 'مدیر'].map((type) {
-                          return DropdownMenuItem(
-                            value: type,
-                            child: Text(type),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _userType = value!;
-                          });
-                        },
-                      ),
-                      SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 42,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              register();
-                              print("111");
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: isLoading? SizedBox(height: 12, width: 60,
-                              child: LoadingWidget()): Text(
-                            'ثبت نام',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'ثبت نام',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-          )),
+                  ),
+                  SizedBox(height: 24),
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'ایجاد حساب کاربری جدید یا ',
+                          style: TextStyle(fontSize: 12, color: Colors.white),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (ctx) => LoginPage(),
+                            ),
+                          ),
+                          child: Text(
+                            'ورود به حساب کاربری',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blueAccent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 50),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Icon(Icons.person, color: Color(0xFF0A3747)),
+                        ),
+                        Expanded(
+                          child: TextFormField(
+                            controller: nameController,
+                            style: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'نام کاربری',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 20,
+                                horizontal: 15,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'لطفاً نام کاربری خود را وارد کنید';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            obscureText: false, // Ensure the text is not obscured for email input
+                            controller: emailController,
+                            textAlign: TextAlign.left, // Align text to the left
+                            style: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'آدرس ایمیل',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 20,
+                                horizontal: 15,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'لطفاً ایمیل خود را وارد کنید';
+                              } else if (!RegExp(
+                                  r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                  .hasMatch(value)) {
+                                return 'ایمیل معتبر وارد کنید';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Icon(Icons.email, color: Color(0xFF0A3747)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Icon(Icons.group, color: Color(0xFF0A3747)),
+                        ),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: _userType,
+                            decoration: InputDecoration(
+                              hintText: 'نوع کاربر',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 20,
+                                horizontal: 15,
+                              ),
+                            ),
+                            items: ['کاربر عادی', 'مدیر'].map((type) {
+                              return DropdownMenuItem(
+                                value: type,
+                                child: Text(type, style: TextStyle(color: Colors.black)),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _userType = value!;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            obscureText: true,
+                            controller: passController,
+                            textAlign: TextAlign.left, // Align text to the left
+                            style: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'رمز عبور',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 20,
+                                horizontal: 15,
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'لطفاً رمز عبور خود را وارد کنید';
+                              } else if (value.length < 6) {
+                                return 'رمز عبور باید حداقل ۶ کاراکتر باشد';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: Icon(Icons.lock, color: Color(0xFF0A3747)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 50),
+
+                  // Register button
+                  SizedBox(
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          register();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: isLoading
+                          ? CircularProgressIndicator(color: Color(0xFF0A3747))
+                          : Text(
+                        'ثبت نام',
+                        style: TextStyle(
+                          color: Color(0xFF0A3747),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
-
-  bool isLoading = false;
 }

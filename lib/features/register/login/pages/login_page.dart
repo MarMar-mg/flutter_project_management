@@ -118,8 +118,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   SizedBox(height: 50),
-
-                  // Email field
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
@@ -134,22 +132,28 @@ class _LoginPageState extends State<LoginPage> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(25),
                           ),
-                          child: Icon(Icons.person, color: Color(0xFF0A3747)),
+                          child: Icon(Icons.email, color: Color(0xFF0A3747)),
                         ),
                         Expanded(
                           child: TextFormField(
                             controller: emailController,
                             style: TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              hintText: 'نام کاربری',
+                              hintText: 'آدرس ایمیل',
                               hintStyle: TextStyle(color: Colors.white70),
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(
-                                  vertical: 20, horizontal: 15),
+                                vertical: 20,
+                                horizontal: 15,
+                              ),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'لطفاً نام کاربری خود را وارد کنید';
+                                return 'لطفاً ایمیل خود را وارد کنید';
+                              } else if (!RegExp(
+                                  r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\\.[a-zA-Z]+")
+                                  .hasMatch(value)) {
+                                return 'ایمیل معتبر وارد کنید';
                               }
                               return null;
                             },
@@ -159,8 +163,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   SizedBox(height: 20),
-
-                  // Password field
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
