@@ -85,26 +85,3 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
-
-// SizedBox(height: 24),
-// Row(
-// children: [
-// Text(
-// 'ورود به حساب کاربری یا ',
-// style: TextStyle(fontSize: 10, color: Colors.black),
-// ),
-// GestureDetector(
-// onTap: () => {
-// Navigator.pushReplacement(
-// context,
-// MaterialPageRoute(
-// builder: (BuildContext ctx) => RegisterPage()))
-//
-// },
-// child: Text('ایجاد حساب کاربری جدید',
-// style: TextStyle(
-// fontSize: 10, color: Colors.blue)),
-// )
-// ],
-// ),
-// SizedBox(height: 20),
