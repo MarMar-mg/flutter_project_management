@@ -372,47 +372,6 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
                             thickness: 1,
                             height: 20,
                           ),
-                          const Text(
-                            'فایل‌ها',
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.bold),
-                          ),
-                          ...task["files"].asMap().entries.map((fileEntry) {
-                            int fileIndex = fileEntry.key;
-                            String fileName = fileEntry.value;
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 8.0, left: 16.0),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      fileName,
-                                      style: TextStyle(
-                                          color: Color(0xFF0A3747),
-                                          fontSize: 14),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete,
-                                        color: Colors.redAccent),
-                                    onPressed: () =>
-                                        _removeFile(taskIndex, fileIndex),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.upload_file,
-                                    color: Color(0xFF0A3747)),
-                                onPressed: () => _addFile(taskIndex),
-                              ),
-                              const Text('افزودن فایل'),
-                            ],
-                          ),
                         ],
                       ),
                     ),
