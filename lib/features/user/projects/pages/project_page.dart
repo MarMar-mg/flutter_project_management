@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../../../main.dart';
-import '../../home_page/pages/home_page.dart';
 
 class UserProjectPage extends StatefulWidget {
   final String projectName;
@@ -148,7 +148,6 @@ class _UserProjectPageState extends State<UserProjectPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     var getTeammembers =
@@ -167,295 +166,261 @@ class _UserProjectPageState extends State<UserProjectPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                'توضیحات پروژه:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                widget.description,
-                style: TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'وظایف:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              FutureBuilder(
-                  future: getTasks,
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    final tasks = snapshot.data!;
-                    return Column(
-                      children: [
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: tasks.length,
-                          itemBuilder: (context, index) {
-                            final task = tasks[index];
-                            return FutureBuilder(
-                                future: SupaBase.from('subtasks')
-                                    .select()
-                                    .eq('taskid', task['taskid']),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
-                                  }
-                                  final subtasks = snapshot.data!;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(16),
-                                                  color: Colors.white,
-                                                  // Background color
-                                                  border: Border.all(
-                                                    color: Colors.purple,
-                                                    // Border color
-                                                    width: 2, // Border width
-                                                  ),
-                                                ),
-                                                child: CheckboxListTile(
-                                                  title:
-                                                      Text(task["tasktitle"]),
-                                                  value:
-                                                      task['status'] == 'Done'
-                                                          ? true
-                                                          : false,
-                                                  onChanged: (bool? value) {
-                                                    setState(() {
-                                                      updateTasks(
-                                                          task['taskid'],
-                                                          task['status']);
-                                                    });
-                                                  },
-                                                ),
-                                              ),
-                                            ),
-                                            (subtasks.length > 0)
-                                                ? (isExpanded.contains(
-                                                        task['taskid'])
-                                                    ? IconButton(
-                                                        icon: const Icon(
-                                                            Icons
-                                                                .keyboard_arrow_up_sharp,
-                                                            color:
-                                                                Colors.purple),
-                                                        onPressed: () => {
-                                                              setState(() {
-                                                                isExpanded
-                                                                    .remove(task[
-                                                                        'taskid']);
-                                                              })
-                                                            })
-                                                    : IconButton(
-                                                        icon: const Icon(
-                                                            Icons
-                                                                .keyboard_arrow_down_sharp,
-                                                            color:
-                                                                Colors.purple),
-                                                        onPressed: () => {
-                                                              setState(() {
-                                                                isExpanded.add(
-                                                                    task[
-                                                                        'taskid']);
-                                                              })
-                                                            }))
-                                                : const SizedBox(
-                                                    width: 38,
-                                                  )
-                                          ],
-                                        ),
-                                        if (isExpanded.contains(task['taskid']))
-                                          Column(
-                                            children: [
-                                              ListView.builder(
-                                                shrinkWrap: true,
-                                                physics:
-                                                    const NeverScrollableScrollPhysics(),
-                                                itemCount: subtasks.length,
-                                                itemBuilder: (context, index) {
-                                                  final subtask =
-                                                      subtasks[index];
-                                                  return Container(
-                                                    margin:
-                                                        const EdgeInsets.only(
-                                                            top: 8.0,
-                                                            left: 72.0),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              16),
-                                                      color: Colors.white,
-                                                      // Background color
-                                                      border: Border.all(
-                                                        color: Colors.purple,
-                                                        // Border color
-                                                        width:
-                                                            2, // Border width
-                                                      ),
-                                                    ),
-                                                    child: CheckboxListTile(
-                                                      title: Text(subtask[
-                                                          "subtasktitle"]),
-                                                      value:
-                                                          subtask['status'] ==
-                                                                  'Done'
-                                                              ? true
-                                                              : false,
-                                                      onChanged: (bool? value) {
-                                                        setState(() {
-                                                          updateSubTasks(
-                                                              subtask[
-                                                                  'subtaskid'],
-                                                              subtask[
-                                                                  'status']);
-                                                        });
-                                                      },
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                              const SizedBox(height: 20),
-                                            ],
-                                          ),
-                                      ],
-                                    ),
-                                  );
-                                });
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-                    );
-                  }),
-              const SizedBox(height: 20),
-              if (_tasks.isNotEmpty)
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => {
-                      setState(() {
-                        createTasks();
-                      }),
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.teal[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.teal, width: 1),
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'توضیحات پروژه:',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.teal),
+                          ),
+                          Text(
+                            widget.description,
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.teal),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: const Text(
-                      'ذخیره وظیفه و زیروظیفه های جدید',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'وظایف:',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal),
                     ),
-                  ),
-                ),
-              const SizedBox(height: 20),
-              Column(
-                children: [
-                  FutureBuilder(
-                      future: getTeammembers,
+                    const SizedBox(height: 12),
+                    FutureBuilder(
+                      future: getTasks,
                       builder: (context, snapshot) {
                         if (!snapshot.hasData) {
                           return const Center(
                               child: CircularProgressIndicator());
                         }
-                        final members = snapshot.data!;
+                        final tasks = snapshot.data!;
+                        if (tasks.isEmpty) {
+                          // Display a message if there are no tasks
+                          return Center(
+                            child: Text(
+                              'هیچ وظیفه‌ای تعریف نشده است.',
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.grey[600]),
+                            ),
+                          );
+                        }
                         return Column(
                           children: [
-                            FutureBuilder(
-                                future: SupaBase.from('teams')
-                                    .select()
-                                    .eq('teamid', widget.teamId),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
-                                  }
-                                  final teams = snapshot.data!;
-                                  return ListView.builder(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: 1,
-                                      itemBuilder: (context, index) {
-                                        final team = teams[0];
-                                        return Center(
-                                          child: Text(
-                                            'اعضای تیم ${team['teamname']}:',
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        );
-                                      });
-                                }),
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              itemCount: members.length,
+                              itemCount: tasks.length,
                               itemBuilder: (context, index) {
-                                final member = members[index];
-                                return Container(
-                                  margin: const EdgeInsets.only(
-                                      top: 8.0, left: 38.0),
-                                  padding: const EdgeInsets.all(12.0),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.purple,
-                                      width: 1, // Border width
-                                    ),
-                                  ),
-                                  child: FutureBuilder(
-                                      future: SupaBase.from('users')
-                                          .select()
-                                          .eq('userid', member['userid']),
-                                      builder: (context, snapshot) {
-                                        if (!snapshot.hasData) {
-                                          return const Center(
-                                              child:
-                                                  CircularProgressIndicator());
-                                        }
-                                        final users = snapshot.data!;
-                                        return ListView.builder(
-                                            shrinkWrap: true,
-                                            physics:
-                                                const NeverScrollableScrollPhysics(),
-                                            itemCount: users.length,
-                                            itemBuilder: (context, index) {
-                                              final userr = users[index];
-                                              return Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons
-                                                        .account_circle_outlined,
-                                                    size: 28,
+                                final task = tasks[index];
+                                return FutureBuilder(
+                                  future: SupaBase.from('subtasks')
+                                      .select()
+                                      .eq('taskid', task['taskid']),
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return const Center(
+                                          child: CircularProgressIndicator());
+                                    }
+                                    final subtasks = snapshot.data!;
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 8.0),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              color: Colors.teal[50],
+                                              border: Border.all(
+                                                  color: Colors.teal, width: 2),
+                                            ),
+                                            child: CheckboxListTile(
+                                              title: Text(
+                                                task["tasktitle"],
+                                                style: const TextStyle(
+                                                    color: Colors.teal),
+                                              ),
+                                              value: task['status'] == 'Done',
+                                              onChanged: (bool? value) {
+                                                setState(() {
+                                                  updateTasks(task['taskid'],
+                                                      task['status']);
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                          if (subtasks.isNotEmpty)
+                                            ExpansionTile(
+                                              title: const Text(
+                                                'زیروظایف',
+                                                style: TextStyle(
+                                                    color: Colors.teal,
+                                                    fontSize: 14),
+                                              ),
+                                              children: subtasks
+                                                  .map<Widget>((subtask) {
+                                                return Container(
+                                                  margin: const EdgeInsets.only(
+                                                      top: 8.0),
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            16),
+                                                    color: Colors.teal[50],
+                                                    border: Border.all(
+                                                        color: Colors.teal,
+                                                        width: 2),
                                                   ),
-                                                  const SizedBox(
-                                                    width: 8.0,
+                                                  child: CheckboxListTile(
+                                                    title: Text(
+                                                      subtask["subtasktitle"],
+                                                      style: const TextStyle(
+                                                          color: Colors.teal),
+                                                    ),
+                                                    value: subtask['status'] ==
+                                                        'Done',
+                                                    onChanged: (bool? value) {
+                                                      setState(() {
+                                                        updateSubTasks(
+                                                            subtask[
+                                                                'subtaskid'],
+                                                            subtask['status']);
+                                                      });
+                                                    },
                                                   ),
-                                                  Text(userr["fullname"]),
-                                                ],
-                                              );
-                                            });
-                                      }),
+                                                );
+                                              }).toList(),
+                                            ),
+                                        ],
+                                      ),
+                                    );
+                                  },
                                 );
                               },
                             ),
                             const SizedBox(height: 20),
                           ],
                         );
-                      })
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Column(
+                children: [
+                  // Team Name Section
+                  FutureBuilder(
+                    future: SupaBase.from('teams').select().eq('teamid', widget.teamId),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final teams = snapshot.data!;
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.teal[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.teal, width: 1),
+                        ),
+                        child: Text(
+                          'اعضای تیم ${teams[0]['teamname']}:',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Team Members Section
+                  FutureBuilder(
+                    future: getTeammembers,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final members = snapshot.data!;
+                      if (members.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'هیچ عضوی در این تیم وجود ندارد.',
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: members.length,
+                        itemBuilder: (context, index) {
+                          final member = members[index];
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8.0),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.teal[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.teal, width: 1),
+                            ),
+                            child: FutureBuilder(
+                              future: SupaBase.from('users').select().eq('userid', member['userid']),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return const Center(child: CircularProgressIndicator());
+                                }
+                                final users = snapshot.data!;
+                                if (users.isEmpty) {
+                                  return const Text(
+                                    'اطلاعات کاربر موجود نیست.',
+                                    style: TextStyle(color: Colors.grey),
+                                  );
+                                }
+                                final user = users[0];
+                                return ListTile(
+                                  leading: Icon(Icons.person, color: Color(0xFF0A3747)),
+                                  title: Text(
+                                    user['fullname'],
+                                    style:
+                                    TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Text(
+                                    user['email'] ?? 'No Email',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ],
               ),
               const SizedBox(
