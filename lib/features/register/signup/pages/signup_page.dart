@@ -185,7 +185,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               if (value == null || value.isEmpty) {
                                 return 'لطفاً ایمیل خود را وارد کنید';
                               } else if (!RegExp(
-                                  r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                  r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+/=?^_{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
                                   .hasMatch(value)) {
                                 return 'ایمیل معتبر وارد کنید';
                               }
