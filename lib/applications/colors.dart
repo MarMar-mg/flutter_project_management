@@ -8,30 +8,8 @@ class AppColor {
   static const Color indigo = Color(0xff0085FE);
   static const Color shimmerColor = Color(0xffF0F0F0);
 
-  static const Color mehrAlborzBlue = Color(0xff294D82);
-  static const Color asstSystemBlue2 = Color(0xff749EAC);
-  static const Color asstSystemBlue = Color(0xffB9D5D5);
-  static const Color asstSystemAppBar = Color(0x66749eac);
-  static const Color teachSystemGreen2 = Color(0xa397ad82);
-  static const Color teachSystemBackground = Color(0x28b7d29c);
-  static const Color teachSystemBackground2 = Color(0x49b7d29c);
-  static const Color asstSystemBackground = Color(0x1fd9d9d9);
-  static const Color asstSystemBackground2 = Color(0x35d9d9d9);
-  static const Color asstSystemBackground3 = Color(0x62d9d9d9);
-  static const Color stuSystemBlue2 = Color(0xff3C7DA3);
-  static const Color stuSystemBackground = Color(0x1a9cbbd2);
-  static const Color stuSystemBackground2 = Color(0x3f9cbbd2);
-  static const Color mehrAlborzBlue2 = Color(0x80294d82);
-  static const Color mehrAlborzOrange = Color(0xffFF9800);
-  static const Color gray = Color(0xff374151);
-  static const Color lightGray = Color(0xff6B7280);
-  static const Color textGray = Color(0xff4B5563);
-  static const Color borderGray = Color(0xffE5E7EB);
-  static const Color darkOrange = Color(0xffCC7A00);
-  static const Color textBlack = Color(0xff111827);
-  static const Color portalGray = Color(0xff6B7280);
-  static const Color shadowGray = Color(0xffF2F2F2);
-  static const Color drawerRed = Color(0xffEF4444);
+  static const Color backgroundGreen = Color(0xFF174251);
+  static const Color mainGreen = Color(0xFF0A3747);
 
   static Color grey(bool isThemeLight, int volume, {int extraVolumeForDark = 0}) {
     if (volume <= 10) volume = volume * 100;

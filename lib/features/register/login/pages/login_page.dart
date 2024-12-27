@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:managment_flutter_project/applications/colors.dart';
 import 'package:managment_flutter_project/features/admin/home_page/pages/home_page.dart';
 import 'package:managment_flutter_project/features/user/home_page/pages/home_page.dart';
 
@@ -63,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF174251), // Dark background color
+      backgroundColor: AppColor.backgroundGreen, // Dark background color
       body: Center(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(30, 100.0, 30, 120),
@@ -72,11 +73,7 @@ class _LoginPageState extends State<LoginPage> {
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Color(0xFF0A3747),
-              border: Border.all(
-                color: Color(0xFF0A3747), // Border color
-                width: 3, // Border width
-              ),
+              color: AppColor.mainGreen,
             ),
             child: Form(
               key: _formKey,

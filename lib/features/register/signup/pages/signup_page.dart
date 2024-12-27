@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../applications/colors.dart';
 import '../../../../main.dart';
 import '../../login/pages/login_page.dart';
 import 'dart:ui';
@@ -64,7 +65,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF174251), // Dark background color
+      backgroundColor: AppColor.backgroundGreen, // Dark background color
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(40.0),
@@ -73,7 +74,7 @@ class _RegisterPageState extends State<RegisterPage> {
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Color(0xFF0A3747),
+              color: AppColor.mainGreen,
             ),
             child: Form(
               key: _formKey,
