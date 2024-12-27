@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import '../../../../applications/colors.dart';
+import 'package:managment_flutter_project/applications/colors.dart';
+
 import '../../../../main.dart';
 import '../../new_project/pages/creat_new_project_page.dart';
 import '../../projects/pages/project_page.dart';
@@ -14,115 +14,267 @@ class AdminHomePage extends StatefulWidget {
 }
 
 class _AdminHomePageState extends State<AdminHomePage> {
-  final List<String> projects = [];
+  late Future<dynamic> getProjectsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    getProjectsFuture = SupaBase.from('projects').select().eq('creator', widget.userId);
+  }
 
   void _addNewProject() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CreateProjectPage(userId: widget.userId,)),
+      MaterialPageRoute(builder: (context) => CreateProjectPage(userId: widget.userId)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    var getProjects = SupaBase.from('projects').select().eq('creator', widget.userId);
     return FutureBuilder(
-        future: getProjects,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final projects = snapshot.data!;
+      future: getProjectsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('خطا در دریافت اطلاعات'));
+        } else if (!snapshot.hasData || snapshot.data.isEmpty) {
           return Scaffold(
-            appBar: AppBar(
-              title: Center(child: Text('صفحه HH')),
-              backgroundColor: Colors.purple,
-            ),
-            backgroundColor: Color(0xfff0f0f0),
-            body: Padding(
-              padding: const EdgeInsets.fromLTRB(50, 40.0, 50, 20),
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: _addNewProject,
-                      child: Container(
-                        width: double.infinity,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.purple,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'ایجاد پروژه جدید',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 40),
-                    Expanded(
-                      child: projects.isEmpty
-                          ? Center(
-                              child: Text(
-                                'هیچ پروژه‌ای ایجاد نشده است',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
-                              ),
-                            )
-                          : GridView.builder(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 5, // Number of items per row
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                              ),
-                              itemCount: projects.length,
-                              itemBuilder: (context, index) {
-                                final project = projects[index];
-                                return GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => ProjectPage(
-                                                projectName:
-                                                    project['projectname'],
-                                                projectId:
-                                                    project['projectid'],
-                                                teamId: project['teamid'],
-                                                description:
-                                                    project['description'], userId: widget.userId,
-                                              )),
-                                    );
-                                  },
-                                  child: Card(
-                                    elevation: 3,
-                                    color: Colors.white,
-                                    child: Center(
-                                      child: Text(
-                                        project['projectname'],
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
-                  ],
-                ),
+            appBar: _buildCustomAppBar(),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.info_outline, size: 50, color: Colors.grey),
+                  SizedBox(height: 10),
+                  Text(
+                    'هیچ پروژه‌ای ایجاد نشده است',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ],
               ),
             ),
           );
-        });
+        }
+        final projects = snapshot.data!;
+        return Scaffold(
+          appBar: _buildCustomAppBar(),
+          backgroundColor: Color(0x343F5F68),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                HoverButton(
+                  onTap: _addNewProject,
+                  child: Text(
+                    'ایجاد پروژه جدید',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: (MediaQuery.of(context).size.width / 200).floor(),
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: projects.length,
+                    itemBuilder: (context, index) {
+                      final project = projects[index];
+                      return HoverCard(
+                        project: project,
+                        userId: widget.userId,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  PreferredSizeWidget _buildCustomAppBar() {
+    return PreferredSize(
+      preferredSize: Size.fromHeight(120.0), // Increased height for better visuals
+      child: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0A3747), Color(0xFF0C4B5E)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'صفحه HH',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'خوش آمدید به داشبورد مدیریت',
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+      ),
+    );
+  }
+
+}
+
+class HoverButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const HoverButton({Key? key, required this.child, required this.onTap}) : super(key: key);
+
+  @override
+  State<HoverButton> createState() => _HoverButtonState();
+}
+
+class _HoverButtonState extends State<HoverButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          height: 60,
+          decoration: BoxDecoration(
+            gradient: _isHovered
+                ? LinearGradient(
+              colors: [Color(0xFF0C4B5E), Color(0xFF0A3747)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            )
+                : LinearGradient(
+              colors: [Color(0xFF0A3747), Color(0xFF0C4B5E)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: _isHovered
+                ? [
+              BoxShadow(
+                color: Color(0xFF0A3747).withOpacity(0.5),
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: Offset(0, 5),
+              )
+            ]
+                : [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 1,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              )
+            ],
+          ),
+          child: Center(
+            child: widget.child,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HoverCard extends StatefulWidget {
+  final dynamic project;
+  final int userId;
+
+  const HoverCard({Key? key, required this.project, required this.userId}) : super(key: key);
+
+  @override
+  State<HoverCard> createState() => _HoverCardState();
+}
+
+class _HoverCardState extends State<HoverCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProjectPage(
+              projectName: widget.project['projectname'] ?? 'نام‌پروژه',
+              projectId: widget.project['projectid'] ?? 0,
+              teamId: widget.project['teamid'] ?? 0,
+              description: widget.project['description'] ?? '',
+              userId: widget.userId,
+            ),
+          ),
+        );
+      },
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          decoration: BoxDecoration(
+            color: _isHovered ? Color(0xFF0A3747).withOpacity(0.1) : Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: _isHovered
+                ? [
+              BoxShadow(
+                color: Color(0xFF0A3747).withOpacity(0.4),
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: Offset(0, 5),
+              )
+            ]
+                : [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 1,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              )
+            ],
+          ),
+          transform: _isHovered ? (Matrix4.identity()..scale(1.05)) : Matrix4.identity(),
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.folder, size: 50, color: Color(0xFF0A3747)),
+                SizedBox(height: 10),
+                Text(
+                  widget.project['projectname'] ?? 'نام‌پروژه',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
