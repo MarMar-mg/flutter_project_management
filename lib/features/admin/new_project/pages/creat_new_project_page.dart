@@ -93,6 +93,7 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
             'teamid': teamId,
             'creator': widget.userId,
             'projectname': _titleController.text,
+            'isdone': false,
             'description': _descriptionController.text,
           })
           .select('projectid')

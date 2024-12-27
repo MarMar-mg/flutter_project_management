@@ -7,6 +7,7 @@ import '../../home_page/pages/home_page.dart';
 class ProjectPage extends StatefulWidget {
   final String projectName;
   final String description;
+  final bool isDone;
   final int projectId;
   final int teamId;
   final int userId;
@@ -17,6 +18,7 @@ class ProjectPage extends StatefulWidget {
       required this.projectId,
       required this.teamId,
       required this.description,
+      required this.isDone,
       required this.userId});
 
   @override
@@ -679,7 +681,7 @@ class _ProjectPageState extends State<ProjectPage> {
               const SizedBox(
                 height: 20,
               ),
-              Row(
+              if(!widget.isDone)Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const SizedBox(

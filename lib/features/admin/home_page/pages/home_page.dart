@@ -57,6 +57,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
           );
         }
         final projects = snapshot.data!;
+        final doneProjects = projects.where((project) => project['isdone'] == true).toList();
+        final notDoneProjects = projects.where((project) => project['isdone'] != true).toList();
+
         return Scaffold(
           appBar: _buildCustomAppBar(),
           backgroundColor: Color(0x343F5F68),
@@ -73,20 +76,12 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 ),
                 const SizedBox(height: 20),
                 Expanded(
-                  child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: (MediaQuery.of(context).size.width / 200).floor(),
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    itemCount: projects.length,
-                    itemBuilder: (context, index) {
-                      final project = projects[index];
-                      return HoverCard(
-                        project: project,
-                        userId: widget.userId,
-                      );
-                    },
+                  child: ListView(
+                    children: [
+                      _buildProjectSection('پروژه‌های انجام‌شده', doneProjects),
+                      const SizedBox(height: 20),
+                      _buildProjectSection('پروژه‌های انجام‌نشده', notDoneProjects),
+                    ],
                   ),
                 ),
               ],
@@ -97,9 +92,58 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
   }
 
+  Widget _buildProjectSection(String title, List<dynamic> projects) {
+    if (projects.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black12),
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: Text(
+              'هیچ پروژه‌ای در این دسته وجود ندارد',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black12),
+        ),
+        const SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: (MediaQuery.of(context).size.width / 200).floor(),
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: projects.length,
+          itemBuilder: (context, index) {
+            final project = projects[index];
+            return HoverCard(
+              project: project,
+              userId: widget.userId,
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   PreferredSizeWidget _buildCustomAppBar() {
     return PreferredSize(
-      preferredSize: Size.fromHeight(120.0), // Increased height for better visuals
+      preferredSize: Size.fromHeight(120.0),
       child: AppBar(
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -135,7 +179,6 @@ class _AdminHomePageState extends State<AdminHomePage> {
       ),
     );
   }
-
 }
 
 class HoverButton extends StatefulWidget {
@@ -226,6 +269,7 @@ class _HoverCardState extends State<HoverCard> {
               teamId: widget.project['teamid'] ?? 0,
               description: widget.project['description'] ?? '',
               userId: widget.userId,
+              isDone: widget.project['isdone']
             ),
           ),
         );
