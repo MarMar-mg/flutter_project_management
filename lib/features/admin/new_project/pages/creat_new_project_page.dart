@@ -834,48 +834,68 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    SizedBox(
+                    const SizedBox(
                       width: 8,
                     ),
                     Expanded(
                       child: SizedBox(
-                        // width: 400,
                         height: 60,
-                        child: HoverButton(
-                          onTap: createProject,
-                          child: Text(
+                        child: ElevatedButton.icon(
+                          onPressed: createProject,
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
                             'ثبت پروژه',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white,),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0A3747), // رنگ سبز/آبی
+                            shadowColor: const Color(0xFF0A3747).withOpacity(0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12), // گوشه‌های گرد
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 8,
                     ),
                     Expanded(
                       child: SizedBox(
-                        // width: 400,
                         height: 60,
-                        child: HoverButton(
-                          onTap: () async {
-                            FilePickerResult? result =
-                                await FilePicker.platform.pickFiles();
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            FilePickerResult? result = await FilePicker.platform.pickFiles();
                             if (result != null) {
-                              print(
-                                  "فایل آپلود شده: ${result.files.single.name}");
+                              print("فایل آپلود شده: ${result.files.single.name}");
                             } else {
                               print("آپلود فایل لغو شد.");
                             }
                           },
-                          child: const Text(
+                          icon: const Icon(
+                            Icons.upload_file,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
                             'آپلود فایل پروژه',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white,),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF005B8F), // رنگ آبی
+                            shadowColor: const Color(0xFF005B8F).withOpacity(0.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12), // گوشه‌های گرد
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 8,
                     ),
                   ],
