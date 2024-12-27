@@ -651,7 +651,7 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
                                           child: CircularProgressIndicator());
                                     }
                                     final teams = snapshot.data!;
-                                    return Column(
+                                    return teams.isEmpty? Text('هیچ تیمی وجود ندارد!'): Column(
                                       children: [
                                         const Text(
                                           'انتخاب تیم',

@@ -26,7 +26,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateProjectPage(userId: widget.userId)),
-    );
+    ).then((value) {
+      setState(() {
+        getProjectsFuture = SupaBase.from('projects').select().eq('creator', widget.userId);
+      });
+    });
   }
 
   @override
@@ -38,25 +42,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('خطا در دریافت اطلاعات'));
-        } else if (!snapshot.hasData || snapshot.data.isEmpty) {
-          return Scaffold(
-            appBar: _buildCustomAppBar(),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.info_outline, size: 50, color: Colors.grey),
-                  SizedBox(height: 10),
-                  Text(
-                    'هیچ پروژه‌ای ایجاد نشده است',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-          );
         }
-        final projects = snapshot.data!;
+
+        final projects = snapshot.data ?? [];
         final doneProjects = projects.where((project) => project['isdone'] == true).toList();
         final notDoneProjects = projects.where((project) => project['isdone'] != true).toList();
 
@@ -99,13 +87,13 @@ class _AdminHomePageState extends State<AdminHomePage> {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black12),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
           ),
           const SizedBox(height: 10),
           Center(
             child: Text(
               'هیچ پروژه‌ای در این دسته وجود ندارد',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: TextStyle(fontSize: 14, color: Colors.black),
             ),
           ),
         ],
@@ -117,7 +105,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
       children: [
         Text(
           title,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black12),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
         ),
         const SizedBox(height: 10),
         GridView.builder(
@@ -264,12 +252,12 @@ class _HoverCardState extends State<HoverCard> {
           context,
           MaterialPageRoute(
             builder: (context) => ProjectPage(
-              projectName: widget.project['projectname'] ?? 'نام‌پروژه',
-              projectId: widget.project['projectid'] ?? 0,
-              teamId: widget.project['teamid'] ?? 0,
-              description: widget.project['description'] ?? '',
-              userId: widget.userId,
-              isDone: widget.project['isdone']
+                projectName: widget.project['projectname'] ?? 'نام‌پروژه',
+                projectId: widget.project['projectid'] ?? 0,
+                teamId: widget.project['teamid'] ?? 0,
+                description: widget.project['description'] ?? '',
+                userId: widget.userId,
+                isDone: widget.project['isdone']
             ),
           ),
         );
