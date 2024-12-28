@@ -149,7 +149,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'صفحه HH',
+                    'صفحه مدریت',
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   SizedBox(height: 5),

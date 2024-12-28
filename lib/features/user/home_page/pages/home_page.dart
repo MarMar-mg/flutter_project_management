@@ -38,7 +38,7 @@ class _UserHomePageState extends State<UserHomePage> {
           appBar: AppBar(
             title: Center(
               child: Text(
-                'HH صفحه',
+                'صفحه کاربر',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),

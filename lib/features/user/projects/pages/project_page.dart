@@ -155,10 +155,7 @@ class _UserProjectPageState extends State<UserProjectPage> {
     var getTasks =
         SupaBase.from('tasks').select().eq('projectid', widget.projectId);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.projectName),
-        backgroundColor: Colors.purple,
-      ),
+      appBar: _buildCustomAppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -429,6 +426,39 @@ class _UserProjectPageState extends State<UserProjectPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildCustomAppBar() {
+    return PreferredSize(
+      preferredSize: Size.fromHeight(120.0),
+      child: AppBar(
+        backgroundColor: Colors.teal[700],
+        flexibleSpace: Container(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.projectName,
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    '',
+                    style: TextStyle(fontSize: 16, color: Color(0xFF0A3747)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
       ),
     );
   }

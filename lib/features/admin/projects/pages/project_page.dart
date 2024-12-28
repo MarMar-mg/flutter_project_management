@@ -175,40 +175,7 @@ class _ProjectPageState extends State<ProjectPage> {
         SupaBase.from('tasks').select().eq('projectid', widget.projectId);
     return Scaffold(
       backgroundColor: Color(0x343F5F68),
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF0A3747), Color(0xFF0C4B5E)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: Padding(
-          padding: const EdgeInsets.only(top: 20.0),
-          child: Text(
-            widget.projectName,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.arrow_forward, color: Colors.white),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
-        elevation: 4,
-        shadowColor: Color(0xFF0A3747).withOpacity(0.5),
-      ),
-
+      appBar: _buildCustomAppBar(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -800,5 +767,42 @@ class _ProjectPageState extends State<ProjectPage> {
     return;
   }
 
-
+  PreferredSizeWidget _buildCustomAppBar() {
+    return PreferredSize(
+      preferredSize: Size.fromHeight(120.0),
+      child: AppBar(
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0A3747), Color(0xFF0C4B5E)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.projectName,
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    '',
+                    style: TextStyle(fontSize: 16, color: Color(0xFF0A3747)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+      ),
+    );
+  }
 }
