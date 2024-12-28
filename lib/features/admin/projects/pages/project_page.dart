@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import '../../../../main.dart';
 import '../../home_page/pages/home_page.dart';
+import 'dart:typed_data';
 
 class ProjectPage extends StatefulWidget {
   final String projectName;
@@ -729,16 +730,11 @@ class _ProjectPageState extends State<ProjectPage> {
                       height: 60,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          FilePickerResult? result = await FilePicker.platform.pickFiles();
-                          if (result != null) {
-                            print("فایل آپلود شده: ${result.files.single.name}");
-                          } else {
-                            print("آپلود فایل لغو شد.");
-                          }
+                          uploadFile();
                         },
                         icon: const Icon(Icons.upload_file, color: Colors.white),
                         label: const Text(
-                          'آپلود فایل پروژه',
+                          'دانلود فایل پروژه',
                           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         style: ButtonStyle(
@@ -776,4 +772,33 @@ class _ProjectPageState extends State<ProjectPage> {
       ),
     );
   }
+
+  String _fileName = '';
+  Uint8List? _fileBytes;
+
+  Future<void> uploadFile() async {
+    final result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      final file = result.files.first;
+      setState(() {
+        _fileName = file.name;
+        _fileBytes = file.bytes;
+      });
+    }
+
+    final filePath = 'user_${widget.userId}/project_${widget.projectId}/$_fileName';
+    final addToFiles = await SupaBase.from('files').insert({
+      'filename': _fileName,
+      'filepath': filePath,
+      'uploadedby': widget.userId,
+      'projectid': widget.projectId,
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("فایل آپلود شد!")),
+    );
+    return;
+  }
+
+
 }

@@ -1,6 +1,6 @@
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-
 import '../../../../main.dart';
 import '../../home_page/pages/home_page.dart';
 
@@ -26,6 +26,7 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
   int chosenTeam = -1;
   bool isTeamSelected = false;
   int teamId = -1;
+
 
   void _addNewTask() {
     setState(() {
@@ -70,6 +71,26 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
       _tasks[taskIndex]["files"].removeAt(fileIndex);
     });
   }
+
+  String _fileName = '';
+  Uint8List? _fileBytes;
+
+  Future<void> uploadFile() async {
+    final result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      final file = result.files.first;
+      setState(() {
+        _fileName = file.name;
+        _fileBytes = file.bytes;
+      });
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("فایل آپلود شد!")),
+    );
+    return;
+  }
+
 
   Future<void> createProject() async {
     if (teamId == -1) {
@@ -125,6 +146,15 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
           });
         }
       }
+
+      final filePath = 'user_${widget.userId}/project_${addToProjects}/$_fileName';
+      final addToFiles = await SupaBase.from('files').insert({
+        'filename': _fileName,
+        'filepath': filePath,
+        'uploadedby': widget.userId,
+        'projectid': addToProjects,
+      });
+
 
       print(teamId);
 
@@ -651,181 +681,194 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
                                           child: CircularProgressIndicator());
                                     }
                                     final teams = snapshot.data!;
-                                    return teams.isEmpty? Text('هیچ تیمی وجود ندارد!'): Column(
-                                      children: [
-                                        const Text(
-                                          'انتخاب تیم',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        ListView.builder(
-                                          shrinkWrap: true,
-                                          physics:
-                                              const NeverScrollableScrollPhysics(),
-                                          itemCount: 1,
-                                          itemBuilder: (context, index) {
-                                            final team = teams[index];
-                                            return Column(
-                                              children: [
-                                                FutureBuilder(
-                                                  future:
-                                                      getTeams, // Fetch all teams
-                                                  builder:
-                                                      (context, teamSnapshot) {
-                                                    if (!teamSnapshot.hasData) {
-                                                      return const Center(
-                                                          child:
-                                                              CircularProgressIndicator());
-                                                    }
+                                    return teams.isEmpty
+                                        ? Text('هیچ تیمی وجود ندارد!')
+                                        : Column(
+                                            children: [
+                                              const Text(
+                                                'انتخاب تیم',
+                                                style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              ListView.builder(
+                                                shrinkWrap: true,
+                                                physics:
+                                                    const NeverScrollableScrollPhysics(),
+                                                itemCount: 1,
+                                                itemBuilder: (context, index) {
+                                                  final team = teams[index];
+                                                  return Column(
+                                                    children: [
+                                                      FutureBuilder(
+                                                        future:
+                                                            getTeams, // Fetch all teams
+                                                        builder: (context,
+                                                            teamSnapshot) {
+                                                          if (!teamSnapshot
+                                                              .hasData) {
+                                                            return const Center(
+                                                                child:
+                                                                    CircularProgressIndicator());
+                                                          }
 
-                                                    final teams =
-                                                        teamSnapshot.data;
-                                                    if (teams is! List) {
-                                                      return const Center(
-                                                          child: Text(
-                                                              'Error: Teams data is not a list.'));
-                                                    }
+                                                          final teams =
+                                                              teamSnapshot.data;
+                                                          if (teams is! List) {
+                                                            return const Center(
+                                                                child: Text(
+                                                                    'Error: Teams data is not a list.'));
+                                                          }
 
-                                                    return ListView.builder(
-                                                      shrinkWrap: true,
-                                                      physics:
-                                                          const NeverScrollableScrollPhysics(),
-                                                      itemCount: teams.length,
-                                                      itemBuilder:
-                                                          (context, teamIndex) {
-                                                        final team =
-                                                            teams[teamIndex];
-                                                        final teamId =
-                                                            team['teamid'];
-                                                        return Container(
-                                                          margin:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                  vertical: 8),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: Colors.white,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                            border: Border.all(
-                                                                color: Color(
-                                                                    0xFF0A3747),
-                                                                width: 1.5),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: Colors
-                                                                    .grey
-                                                                    .withOpacity(
-                                                                        0.3),
-                                                                spreadRadius: 2,
-                                                                blurRadius: 5,
-                                                                offset: Offset(
-                                                                    0, 3),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              CheckboxListTile(
-                                                                title: Text(
+                                                          return ListView
+                                                              .builder(
+                                                            shrinkWrap: true,
+                                                            physics:
+                                                                const NeverScrollableScrollPhysics(),
+                                                            itemCount:
+                                                                teams.length,
+                                                            itemBuilder:
+                                                                (context,
+                                                                    teamIndex) {
+                                                              final team = teams[
+                                                                  teamIndex];
+                                                              final teamId =
                                                                   team[
-                                                                      "teamname"],
-                                                                  style:
-                                                                      TextStyle(
-                                                                    fontSize:
-                                                                        16,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w500,
-                                                                    color: isChosenTeam ==
-                                                                            teamId
-                                                                        ? Color(
-                                                                            0xFF0A3747)
-                                                                        : Colors
-                                                                            .black,
-                                                                  ),
+                                                                      'teamid'];
+                                                              return Container(
+                                                                margin: const EdgeInsets
+                                                                    .symmetric(
+                                                                    vertical:
+                                                                        8),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              10),
+                                                                  border: Border.all(
+                                                                      color: Color(
+                                                                          0xFF0A3747),
+                                                                      width:
+                                                                          1.5),
+                                                                  boxShadow: [
+                                                                    BoxShadow(
+                                                                      color: Colors
+                                                                          .grey
+                                                                          .withOpacity(
+                                                                              0.3),
+                                                                      spreadRadius:
+                                                                          2,
+                                                                      blurRadius:
+                                                                          5,
+                                                                      offset:
+                                                                          Offset(
+                                                                              0,
+                                                                              3),
+                                                                    ),
+                                                                  ],
                                                                 ),
-                                                                value:
-                                                                    isChosenTeam ==
-                                                                        teamId,
-                                                                onChanged:
-                                                                    (bool?
-                                                                        value) {
-                                                                  setState(() {
-                                                                    isChosenTeam = value ==
-                                                                            true
-                                                                        ? teamId
-                                                                        : -1;
-                                                                  });
-                                                                },
-                                                                activeColor: Color(
-                                                                    0xFF0A3747),
-                                                                checkColor:
-                                                                    Colors
-                                                                        .white,
-                                                                controlAffinity:
-                                                                    ListTileControlAffinity
-                                                                        .leading,
-                                                              ),
-                                                              if (isChosenTeam ==
-                                                                  teamId)
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          16.0,
-                                                                      vertical:
-                                                                          8),
-                                                                  child: TeamMembersList(
-                                                                      teamId:
-                                                                          teamId),
+                                                                child: Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    CheckboxListTile(
+                                                                      title:
+                                                                          Text(
+                                                                        team[
+                                                                            "teamname"],
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              16,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                          color: isChosenTeam == teamId
+                                                                              ? Color(0xFF0A3747)
+                                                                              : Colors.black,
+                                                                        ),
+                                                                      ),
+                                                                      value: isChosenTeam ==
+                                                                          teamId,
+                                                                      onChanged:
+                                                                          (bool?
+                                                                              value) {
+                                                                        setState(
+                                                                            () {
+                                                                          isChosenTeam = value == true
+                                                                              ? teamId
+                                                                              : -1;
+                                                                        });
+                                                                      },
+                                                                      activeColor:
+                                                                          Color(
+                                                                              0xFF0A3747),
+                                                                      checkColor:
+                                                                          Colors
+                                                                              .white,
+                                                                      controlAffinity:
+                                                                          ListTileControlAffinity
+                                                                              .leading,
+                                                                    ),
+                                                                    if (isChosenTeam ==
+                                                                        teamId)
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                16.0,
+                                                                            vertical:
+                                                                                8),
+                                                                        child: TeamMembersList(
+                                                                            teamId:
+                                                                                teamId),
+                                                                      ),
+                                                                  ],
                                                                 ),
-                                                            ],
-                                                          ),
-                                                        );
-                                                      },
-                                                    );
+                                                              );
+                                                            },
+                                                          );
+                                                        },
+                                                      )
+                                                    ],
+                                                  );
+                                                },
+                                              ),
+                                              const SizedBox(height: 20),
+                                              SizedBox(
+                                                width: double.infinity,
+                                                child: ElevatedButton(
+                                                  onPressed: () => {
+                                                    addTeam(),
+                                                    setState(() {
+                                                      isTeamSelected = true;
+                                                    }),
                                                   },
-                                                )
-                                              ],
-                                            );
-                                          },
-                                        ),
-                                        const SizedBox(height: 20),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: () => {
-                                              addTeam(),
-                                              setState(() {
-                                                isTeamSelected = true;
-                                              }),
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  Color(0xFF0A3747),
-                                              shadowColor: Color(0xFF0A3747)
-                                                  .withOpacity(0.5),
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 16),
-                                            ),
-                                            child: const Text(
-                                              'انتخاب تیم',
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    );
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Color(0xFF0A3747),
+                                                    shadowColor:
+                                                        Color(0xFF0A3747)
+                                                            .withOpacity(0.5),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 16),
+                                                  ),
+                                                  child: const Text(
+                                                    'انتخاب تیم',
+                                                    style: TextStyle(
+                                                        fontSize: 16,
+                                                        color: Colors.white),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
                                   }),
                         ],
                       ),
@@ -849,15 +892,23 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
                           ),
                           label: const Text(
                             'ثبت پروژه',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white,),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0A3747), // رنگ سبز/آبی
-                            shadowColor: const Color(0xFF0A3747).withOpacity(0.5),
+                            backgroundColor: const Color(0xFF0A3747),
+                            // رنگ سبز/آبی
+                            shadowColor:
+                                const Color(0xFF0A3747).withOpacity(0.5),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12), // گوشه‌های گرد
+                              borderRadius:
+                                  BorderRadius.circular(12), // گوشه‌های گرد
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16, horizontal: 24),
                           ),
                         ),
                       ),
@@ -870,12 +921,7 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
                         height: 60,
                         child: ElevatedButton.icon(
                           onPressed: () async {
-                            FilePickerResult? result = await FilePicker.platform.pickFiles();
-                            if (result != null) {
-                              print("فایل آپلود شده: ${result.files.single.name}");
-                            } else {
-                              print("آپلود فایل لغو شد.");
-                            }
+                            uploadFile();
                           },
                           icon: const Icon(
                             Icons.upload_file,
@@ -883,15 +929,22 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
                           ),
                           label: const Text(
                             'آپلود فایل پروژه',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white,),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF005B8F), // رنگ آبی
-                            shadowColor: const Color(0xFF005B8F).withOpacity(0.5),
+                            shadowColor:
+                                const Color(0xFF005B8F).withOpacity(0.5),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12), // گوشه‌های گرد
+                              borderRadius:
+                                  BorderRadius.circular(12), // گوشه‌های گرد
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16, horizontal: 24),
                           ),
                         ),
                       ),
