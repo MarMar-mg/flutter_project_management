@@ -278,7 +278,7 @@ class _UserProjectPageState extends State<UserProjectPage> {
                                                   .map<Widget>((subtask) {
                                                 return Container(
                                                   margin: const EdgeInsets.only(
-                                                      top: 8.0),
+                                                      top: 8.0, left: 20),
                                                   decoration: BoxDecoration(
                                                     borderRadius:
                                                         BorderRadius.circular(

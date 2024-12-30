@@ -147,7 +147,7 @@ class _UserHomePageState extends State<UserHomePage> {
           shrinkWrap: true,
           physics: BouncingScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 5,
+            crossAxisCount: 4,
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
             childAspectRatio: 1,
